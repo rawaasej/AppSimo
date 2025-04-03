@@ -9,7 +9,7 @@ plugins {
 dependencies {
   // Import the Firebase BoM
   implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
-
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
   // TODO: Add the dependencies for Firebase products you want to use
   // When using the BoM, don't specify versions in Firebase dependencies
@@ -26,6 +26,7 @@ android {
     ndkVersion = "27.0.12077973" // Vérifie la version du NDK
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }

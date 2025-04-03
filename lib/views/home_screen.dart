@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // 🔥 Import Firestore
 import 'observer_page.dart'; // Import de la nouvelle page
 import 'machine_down_page.dart'; // Import de la page "Machine en panne"
 import 'login_screen.dart'; // Import de la page LoginScreen
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:audioplayers/audioplayers.dart'; // Import du package pour jouer le son
 
 class HomeScreen extends StatefulWidget {
   final bool isAdmin;
@@ -15,13 +17,57 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isMachineDown = false; // 🔴 État de la machine (en panne ou pas)
+  late FlutterLocalNotificationsPlugin
+  flutterLocalNotificationsPlugin; // Déclare la variable
+  late AudioPlayer _audioPlayer; // Déclare un lecteur audio
 
   @override
   void initState() {
     super.initState();
+    _initializeNotifications();
+    _audioPlayer = AudioPlayer(); // Initialisation du lecteur audio
     _listenToMachineStatus();
   }
 
+  // Initialisation du plugin de notifications
+  void _initializeNotifications() {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Afficher la notification avec son personnalisé
+  void _showNotification() async {
+    // Lire le son depuis les assets avant de montrer la notification
+    await _audioPlayer.play(AssetSource('sounds/alert.mp3'));
+
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'maintenance_channel',
+          'Maintenance Notifications',
+          channelDescription: 'Notifications when the machine is down',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Alerte de maintenance',
+      'La machine est en panne!',
+      notificationDetails,
+    );
+  }
+
+  // Écouter l'état de la machine dans Firestore
   void _listenToMachineStatus() {
     FirebaseFirestore.instance
         .collection('maintenance')
@@ -32,6 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               isMachineDown = snapshot.data()?['panne'] ?? false;
             });
+
+            // Si la machine est en panne, afficher la notification
+            if (isMachineDown) {
+              _showNotification();
+            }
           }
         });
   }
