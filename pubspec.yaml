@@ -1,0 +1,55 @@
+name: appsimo
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # firebase_core: ^2.24.2
+  # firebase_auth: ^4.15.3
+  # firebase_database: ^10.3.5
+  # curved_navigation_bar: ^1.0.6
+  # twilio_flutter: ^0.9.0
+  # shared_preferences: ^2.5.3
+  # awesome_notifications: ^0.10.1
+  # provider: ^6.0.5
+  # cloud_firestore: ^4.17.5 # Une version stable et compatible de Cloud Firestore
+  # flutter_local_notifications: ^19.0.0
+  #khalih
+  syncfusion_flutter_charts: ^29.1.39
+  syncfusion_flutter_gauges: ^29.1.39
+  permission_handler: ^12.0.0+1
+  shimmer: ^3.0.0
+  audioplayers: ^6.4.0 # firebase_messaging: ^15.2.4
+  fl_chart: ^0.70.2
+  intl: ^0.20.2
+  google_fonts: ^6.2.1
+  #khalih
+  firebase_auth: ^5.5.1
+  firebase_core: ^3.12.1
+  firebase_messaging_web: ^3.10.4 # Assure-toi d'utiliser la version correcte
+  firebase_auth_web: ^5.14.1 # Vérifie la version compatible
+  cloud_firestore: ^5.0.0 # Ajoute cloud_firestore pour utiliser Firestore
+  provider: ^6.0.5
+  flutter_local_notifications: ^19.0.0
+  curved_navigation_bar: ^1.0.6
+  twilio_flutter: ^0.9.0
+  firebase_database: ^11.3.4
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - images/
+    - assets/sounds/alert.mp3

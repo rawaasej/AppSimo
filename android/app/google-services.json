@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "461654124379",
+    "project_id": "appsimo-38a84",
+    "storage_bucket": "appsimo-38a84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461654124379:android:f4cee8235ae0341a7a1c7e",
+        "android_client_info": {
+          "package_name": "com.example.appsimo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQorUdSXFFnfccur9JbMcONsce8TTzQm4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
