@@ -46,66 +46,66 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _checkCredentials() async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
 
-Future<void> _checkCredentials() async {
-  String email = emailController.text.trim();
-  String password = passwordController.text.trim();
-
-  if (email.isEmpty || password.isEmpty) {
-    _showErrorDialog("Veuillez remplir tous les champs.");
-    return;
-  }
-
-  try {
-    // 🔍 Rechercher l'utilisateur par email
-    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .get();
-
-    if (userSnapshot.docs.isNotEmpty) {
-      var userDoc = userSnapshot.docs.first;
-      String storedPassword = userDoc['password'].toString().trim();
-
-      if (storedPassword == password) {
-        // ✅ Authentification réussie
-
-        String role = userDoc['role'];
-        String nom = userDoc['nom'];
-        String matricule = userDoc['matricule'];
-
-        // Sauvegarder email et mot de passe si "remember me"
-        _saveCredentials(email, password);
-
-        // Sauvegarder toutes les infos dans SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('role', role);
-        await prefs.setString('nom_technicien', nom);
-        await prefs.setString('matricule_technicien', matricule);
-
-        // Redirection selon le rôle
-        bool isAdmin = role == 'admin';
-        bool isTechnicien = role == 'technicien';
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                HomeScreen(isAdmin: isAdmin, isTechnicien: isTechnicien),
-          ),
-        );
-      } else {
-        _showErrorDialog("Mot de passe incorrect.");
-      }
-    } else {
-      _showErrorDialog("Email non trouvé.");
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog("Veuillez remplir tous les champs.");
+      return;
     }
-  } catch (e) {
-    print('Erreur Firestore: $e');
-    _showErrorDialog("Une erreur est survenue. Veuillez réessayer.");
-  }
-}
 
+    try {
+      // 🔍 Rechercher l'utilisateur par email
+      QuerySnapshot userSnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        var userDoc = userSnapshot.docs.first;
+        String storedPassword = userDoc['password'].toString().trim();
+
+        if (storedPassword == password) {
+          // ✅ Authentification réussie
+
+          String role = userDoc['role'];
+          String nom = userDoc['name'];
+          String matricule = userDoc['matricule'];
+
+          // Sauvegarder email et mot de passe si "remember me"
+          _saveCredentials(email, password);
+
+          // Sauvegarder toutes les infos dans SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('role', role);
+          await prefs.setString('nom_technicien', nom);
+          await prefs.setString('matricule_technicien', matricule);
+
+          // Redirection selon le rôle
+          bool isAdmin = role == 'admin';
+          bool isTechnicien = role == 'technicien';
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      HomeScreen(isAdmin: isAdmin, isTechnicien: isTechnicien),
+            ),
+          );
+        } else {
+          _showErrorDialog("Mot de passe incorrect.");
+        }
+      } else {
+        _showErrorDialog("Email non trouvé.");
+      }
+    } catch (e) {
+      print('Erreur Firestore: $e');
+      _showErrorDialog("Une erreur est survenue. Veuillez réessayer.");
+    }
+  }
 
   void _showErrorDialog(String message) {
     showDialog(
