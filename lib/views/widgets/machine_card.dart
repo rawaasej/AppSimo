@@ -4,7 +4,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class _ChartData {
-  final String label; // <-- changement ici
+  final String label;
   final int value;
   _ChartData(this.label, this.value);
 }
@@ -21,8 +21,20 @@ class MachineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool etatFonctionnement = (machineData['etat_fonctionnement'] as int?) == 1;
-    double piecesPerHour = machineData['piece_par_heure']?.toDouble() ?? 0;
+    bool etatFonctionnement =
+        (machineData['etat_fonctionnement'] as num?)?.toInt() == 1;
+    int piecesPerHour = 0;
+    var piecePerHourValue = machineData['piece_par_heure'];
+
+    if (piecePerHourValue is double) {
+      piecesPerHour = piecePerHourValue.toInt();
+    } else if (piecePerHourValue is int) {
+      piecesPerHour = piecePerHourValue;
+    } else {
+      piecesPerHour = 0;
+    }
+
+    int etatPanne = (machineData['etat_panne'] as num?)?.toInt() ?? 0;
 
     return Card(
       elevation: 8,
@@ -38,11 +50,15 @@ class MachineCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 0, 0, 0),
+                color: Color.fromARGB(255, 63, 166, 198),
               ),
             ),
             const SizedBox(height: 16),
-            _buildGaugeWithStatus(piecesPerHour, etatFonctionnement),
+            _buildGaugeWithStatus(
+              piecesPerHour.toDouble(),
+              etatFonctionnement,
+              etatPanne,
+            ),
             const SizedBox(height: 16),
             _sparklineGraph(machineName),
             const SizedBox(height: 16),
@@ -65,7 +81,11 @@ class MachineCard extends StatelessWidget {
 
   String _pad(int value) => value.toString().padLeft(2, '0');
 
-  Widget _buildGaugeWithStatus(double value, bool etatFonctionnement) {
+  Widget _buildGaugeWithStatus(
+    double value,
+    bool etatFonctionnement,
+    int etatPanne,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         double gaugeSize = constraints.maxWidth > 600 ? 240 : 180;
@@ -81,25 +101,25 @@ class MachineCard extends StatelessWidget {
                 children: [
                   _buildTimeBlock(
                     'Temps de marche',
-                    machineData['temps_marche_h'],
-                    machineData['temps_marche_m'],
-                    machineData['temps_marche_s'],
+                    (machineData['temps_marche_h'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_marche_m'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_marche_s'] as num?)?.toInt() ?? 0,
                     Colors.green,
                   ),
                   const SizedBox(height: 12),
                   _buildTimeBlock(
                     'Temps d\'arrêt',
-                    machineData['temps_arret_h'],
-                    machineData['temps_arret_m'],
-                    machineData['temps_arret_s'],
+                    (machineData['temps_arret_h'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_arret_m'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_arret_s'] as num?)?.toInt() ?? 0,
                     Colors.red,
                   ),
                   const SizedBox(height: 12),
                   _buildTimeBlock(
                     'Temps de panne',
-                    machineData['temps_panne_h'],
-                    machineData['temps_panne_m'],
-                    machineData['temps_panne_s'],
+                    (machineData['temps_panne_h'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_panne_m'] as num?)?.toInt() ?? 0,
+                    (machineData['temps_panne_s'] as num?)?.toInt() ?? 0,
                     Colors.orange,
                   ),
                 ],
@@ -111,11 +131,6 @@ class MachineCard extends StatelessWidget {
                   radius: 30,
                   backgroundColor:
                       etatFonctionnement ? Colors.green : Colors.red,
-                  child: Icon(
-                    etatFonctionnement ? Icons.check : Icons.close,
-                    color: Colors.white,
-                    size: 32,
-                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -126,6 +141,30 @@ class MachineCard extends StatelessWidget {
                     color: etatFonctionnement ? Colors.green : Colors.red,
                   ),
                 ),
+                SizedBox(height: 16),
+                if (etatPanne == 1) ...[
+                  CircleAvatar(radius: 30, backgroundColor: Colors.yellow),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Panne active",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.yellow,
+                    ),
+                  ),
+                ] else ...[
+                  CircleAvatar(radius: 30, backgroundColor: Colors.black),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Pas de panne",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ],
             ),
             Expanded(
@@ -221,46 +260,44 @@ class MachineCard extends StatelessWidget {
   }
 
   Widget _buildTimeBlock(
-    String title,
-    dynamic heures,
-    dynamic minutes,
-    dynamic secondes,
+    String label,
+    int hours,
+    int minutes,
+    int seconds,
     Color color,
   ) {
-    int h = (heures is int) ? heures : 0;
-    int m = (minutes is int) ? minutes : 0;
-    int s = (secondes is int) ? secondes : 0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            '${_pad(h)}:${_pad(m)}:${_pad(s)}',
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            label,
             style: TextStyle(
-              color: color,
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: color,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            '${_formatTime(hours)}:${_formatTime(minutes)}:${_formatTime(seconds)}',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+  String _formatTime(int value) => value.toString().padLeft(2, '0');
 
   List<Widget> _buildInfoText(Map<String, dynamic> data) {
     Map<String, String> labels = {
@@ -279,7 +316,7 @@ class MachineCard extends StatelessWidget {
 
       if (entry.key == 'MTBF' || entry.key == 'MTTR') {
         int totalSeconds =
-            value is int ? value : int.tryParse(value.toString()) ?? 0;
+            value is num ? value.toInt() : int.tryParse(value.toString()) ?? 0;
         int hours = totalSeconds ~/ 3600;
         int minutes = (totalSeconds % 3600) ~/ 60;
         int seconds = totalSeconds % 60;
@@ -296,7 +333,7 @@ class MachineCard extends StatelessWidget {
       return Chip(
         backgroundColor: Colors.blue.shade50,
         label: Text(
-          '${entry.value}: $value',
+          '${entry.value}: ${value.toString()}',
           style: const TextStyle(fontSize: 14),
         ),
       );
